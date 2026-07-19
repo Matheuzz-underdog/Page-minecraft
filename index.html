@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="CSS/styles.css">
     <link rel="icon" href="assets/icons/magnifyingGlass.ico">
     <title>Mincecraft Profile-Server Finder</title>
 </head>
@@ -21,18 +21,19 @@
         </button>
     </header>
     <main>
-        <form>
-            <input type="text" placeholder="Ingresa un usuario o servidor para buscar...">
-            <button>
-                <img src="assets/images/magnifying_glass.png" alt="">
+        <form id="form-busqueda">
+            <input type="text" id="input-busqueda" placeholder="Ingresa un usuario o servidor para buscar...">
+            <button type="submit">
+                <img src="assets/images/magnifying_glass.png" alt="buscar">
             </button>
         </form>
+        <div id="lista-resultados" class="lista-resultados"></div>
     </main>
     <footer>
         <button>
             <img src="assets/images/how_to_play_button_pressed.png" alt="">
         </button>
-        <script src="JS/endpoinst.js"></script>
+        <script type="module" src="JS/main.js"></script>
     </footer>
 </body>
 </html>

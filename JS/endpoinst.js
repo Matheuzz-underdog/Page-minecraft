@@ -1,5 +1,5 @@
 // modulo servidor: api mcsrvstat.us
-const ServidorAPI = {
+export const ServidorAPI = {
 
   /**
    * Consulta el estado completo de un servidor de Minecraft.
@@ -65,7 +65,7 @@ const ServidorAPI = {
 
 // modulo jugador: obtenemos uuid mendiante usuario gracias playerdb para pasarla por crafatar y asi obtener visuales
 //viable para utilar src en <image>
-const JugadorAPI = {
+export const JugadorAPI = {
 
   crafatarBase: "https://crafatar.skyblock.net",
 
@@ -147,7 +147,7 @@ const JugadorAPI = {
 
    // modulo server-jugadores : poco funcional para servver bien modificados que no muestran la lista de jugadores minima 
     // maximo de 12 puesto es lo que la peticion envia se puede ahumentar pero que muy poco probable encontrar server
-const JugadoresDelServidorAPI = {
+export const JugadoresDelServidorAPI = {
 
   maximoJugadores: 12,
 
