@@ -5,6 +5,15 @@
     font-style: normal;
 }
 
+:root {
+    --gris: #2A2A2A;
+    --negro: #171615;
+    --amarillo: #FFFF55;
+    --verde: #3C8527;
+    --gris_claro: #ABA09C;
+    --blanco: #EDEDED;
+}
+
 *{
     font-family: 'minecraft';
     margin: 0;
@@ -13,28 +22,89 @@
 
 body {
     overflow: hidden;
+    background-image: url('../assets/images/Dirt_background_BE2.webp');
 }
 
 header {
     width: 100vw;
-    height: 13vh;
-    background: #00f;
+    height: 15vh;
+    background: transparent;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 20%;
 }
 
-#titulo_con {
+.boton_con {
+    width: 10%;
+    height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-direction: column;
 }
 
+h4 {
+    font-size: 16px;
+    color: var(--blanco);
+    text-shadow: 0px 3px 0px var(--negro);
+}
+
+button {
+    background: transparent;
+    border: none;
+}
+
+#config {
+    background: var(--gris);
+    border: 5px solid var(--negro);
+    padding-top: 7px;
+    cursor: pointer;
+}
+
+#toggle > img {
+    height: 50px;
+    width: 100px;
+    cursor: pointer;
+}
+
+#titulo_con {
+    position: relative;
+    width: 80%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+#titulo {
+    transform: scale(1.5);
+}
+
+h1 {
+    position: absolute;
+    z-index: 10;
+    font-size: 16px;
+    color: var(--amarillo);
+    text-shadow: 2px 2px 0px var(--negro),
+    4px 4px 2px var(--negro);
+    font-weight: 100;
+    right: 24%; 
+    bottom: 15%; 
+    animation: splashMinecraft 0.8s infinite alternate ease-in-out;
+}
+
+@keyframes splashMinecraft {
+    0% {
+        transform: rotate(-20deg) scale(1);
+    }
+    100% {
+        transform: rotate(-20deg) scale(1.1);
+    }
+}
+
 main {
-    background: #000;
-    height: 77vh;
+    background: #0006;
+    height: 75vh;
     width: 100vw;
     display: flex;
     flex-direction: column;
@@ -45,9 +115,12 @@ main {
 }
 
 footer {
-    background: #f00;
+    background: transparent;
     width: 100vw;
     height: 10vh;
+    display: flex;
+    justify-content: start;
+    align-items: center;
 }
 
 /* ===== Lista de resultados =====
@@ -87,6 +160,7 @@ footer {
     box-sizing: border-box;
     min-width: 0;
     flex-shrink: 0;
+    margin: 3% 0 0 0;
 }
 
 /* esquina superior derecha: estado (si aplica) + boton de borrar */
@@ -224,4 +298,52 @@ footer {
     margin-left: auto;
     margin-right: 30px;
     flex-shrink: 0;
+}
+
+#form-busqueda {
+    width: 60%;
+    height: 30px;
+    display: flex;
+    margin-top: 1%;
+}
+
+input {
+    background: var(--gris);
+    color: var(--gris_claro);
+    border: none;
+    border-bottom: solid 5px var(--negro);
+}
+
+#input-busqueda {
+    width: 90%;
+    height: 100%;
+    padding: 5px;
+    font-size: 16px;
+}
+
+#boton_buscar {
+    height: 45px ;
+    width: 40px;
+    padding: 5px;
+    background: var(--gris);
+    margin-left: 1%;
+    cursor: pointer;
+    border-bottom: solid 5px var(--negro);
+}
+
+#boton_buscar > img {
+    height: 32px;
+    width: 32px;
+}
+
+#info {
+    background: var(--gris);
+    padding-top: 5px;
+    margin-left: 2.5%;
+    cursor: pointer;
+}
+
+#info > img {
+    height: 50px;
+    width: 50px;
 }
