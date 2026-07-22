@@ -430,15 +430,18 @@ export const SteamBibliotecaAPI = {
 // futuro agregarr algun comparador si precio = null 
 export const SteamTiendaAPI = {
   async detallesCompletosJuego(appId) {
-    try { //la peticiones se vab por las nuves
-      const [steamStore, gamalytic, steamReviews] = await Promise.all([
+    try { 
+      const [steamStore, gamalytic, steamReviews, statsJugadores] = await Promise.all([
         fetchConProxy(`https://store.steampowered.com/api/appdetails?appids=${appId}`),
         fetchDirecto(`https://api.gamalytic.com/steam-games/list?appids=${appId}`),
-        fetchConProxy(`https://store.steampowered.com/appreviews/${appId}?json=1&language=spanish&purchase_type=all&num_per_page=20`)
+        fetchConProxy(`https://store.steampowered.com/appreviews/${appId}?json=1&language=spanish&purchase_type=all&num_per_page=20`),
+        fetchConProxy(construirUrlSteam("ISteamUserStats", "GetNumberOfCurrentPlayers", 1, { appid: appId }))
       ]);
 
       const datosSteam = steamStore && steamStore[appId]?.success ? steamStore[appId].data : null;
       const datosFinanzas = gamalytic.result?.[0] || {};
+      
+      const jugadoresActuales = statsJugadores?.response?.player_count || 0; // captura los jugadores actuales si falla devuelve 0
 
       if (!datosSteam) return { encontrado: false, motivo: "Juego no encontrado o bloqueado por Steam" };
 
@@ -452,7 +455,7 @@ export const SteamTiendaAPI = {
           .sort(() => 0.5 - Math.random());
           
         resenasAleatorias = mezcladas.slice(0, 3).map(r => ({
-          recomendado: r.voted_up, // true = pulgar arriba, false = pulgar abajo
+          recomendado: r.voted_up, 
           horasJugadas: r.author?.playtime_forever ? Math.round(r.author.playtime_forever / 60) : 0,
           texto: r.review
         }));
@@ -472,8 +475,8 @@ export const SteamTiendaAPI = {
           precioActual: datosFinanzas.price || null,
           ventasEstimadas: datosFinanzas.copiesSold || 0,
           gananciaBrutaEstimada: (datosFinanzas.price && datosFinanzas.copiesSold) ? Math.round(datosFinanzas.price * datosFinanzas.copiesSold) : 0,
-          
-          // Nuevos campos agregados
+          // Nuevo campo agregados
+          jugadoresActuales: jugadoresActuales,
           totalResenas: totalResenas,
           resenasMuestra: resenasAleatorias
         }
@@ -497,19 +500,22 @@ export const SteamTiendaAPI = {
             loteIds.map((id) =>
               Promise.all([
                 fetchConProxy(`https://store.steampowered.com/api/appdetails?appids=${id}`),
-                fetchConProxy(`https://store.steampowered.com/appreviews/${id}?json=1&language=spanish&purchase_type=all&num_per_page=1`)
+                fetchConProxy(`https://store.steampowered.com/appreviews/${id}?json=1&language=spanish&purchase_type=all&num_per_page=1`),
+                fetchConProxy(construirUrlSteam("ISteamUserStats", "GetNumberOfCurrentPlayers", 1, { appid: id }))
               ])
-                .then(([datosApp, datosReviews]) => ({ id, datosApp, datosReviews }))
-                .catch((error) => ({ id, datosApp: null, datosReviews: null, error }))
+
+                .then(([datosApp, datosReviews, datosJugadores]) => ({ id, datosApp, datosReviews, datosJugadores }))
+                .catch((error) => ({ id, datosApp: null, datosReviews: null, datosJugadores: null, error }))
             )
           ),
           fetchDirecto(`https://api.gamalytic.com/steam-games/list?appids=${stringIds}`)
         ]);
 
-        for (const { id, datosApp, datosReviews } of resultadosSteam) {
+        for (const { id, datosApp, datosReviews, datosJugadores } of resultadosSteam) {
           const datosSteam = datosApp?.[id]?.success ? datosApp[id].data : null;
           const datosFinanzas = gamalytic.result?.find(g => String(g.steamId) === String(id)) || {};
           const totalResenas = datosReviews?.query_summary?.total_reviews || 0;
+          const jugadoresActuales = datosJugadores?.response?.player_count || 0; //contador
 
           if (datosSteam) {
             juegosEncontrados.push({
@@ -524,6 +530,7 @@ export const SteamTiendaAPI = {
               precioActual: datosFinanzas.price || null,
               ventasEstimadas: datosFinanzas.copiesSold || 0,
               gananciaBrutaEstimada: (datosFinanzas.price && datosFinanzas.copiesSold) ? Math.round(datosFinanzas.price * datosFinanzas.copiesSold) : 0,
+              jugadoresActuales,
               totalResenas
             });
           }
@@ -573,5 +580,108 @@ export const SteamTiendaAPI = {
     } catch (error) {
       return { encontrado: false, motivo: "Error al buscar el juego por nombre", error: error.message };
     }
-  }
+  },
+
+  async top10JuegosMasJugados() {
+    try {
+      const url = construirUrlSteam("ISteamChartsService", "GetGamesByConcurrentPlayers", 1);
+      const datos = await fetchConProxy(url);
+
+      const ranking = datos.response?.ranks ?? [];
+      
+      if (ranking.length === 0) {
+        return { encontrado: false, motivo: "No se pudo obtener el ranking actual de Steam" };
+      }
+
+      const top10Ids = ranking.slice(0, 10).map(juego => juego.appid);
+
+      const resultadosTop10 = await this.detallesMultiplesJuegos(top10Ids, 10);
+
+      if (resultadosTop10.juegos && resultadosTop10.juegos.length > 0) {
+        resultadosTop10.juegos.sort((a, b) => b.jugadoresActuales - a.jugadoresActuales);
+      }
+
+      return {
+        encontrado: resultadosTop10.encontrado,
+        titulo: "Top 10 Juegos Más Jugados Actualmente",
+        totalConsultados: resultadosTop10.totalConsultados,
+        juegos: resultadosTop10.juegos
+      };
+
+    } catch (error) {
+      console.error("Error al obtener el Top 10:", error);
+      return { encontrado: false, error: error.message };
+    }
+  },
+
+  async top10MasVendidosHistorico() {
+    try {
+      const gamalytic = await fetchDirecto(`https://api.gamalytic.com/steam-games/list?limit=10`);
+
+      const rankingGamalytic = gamalytic.result ?? [];
+      
+      if (rankingGamalytic.length === 0) {
+        return { encontrado: false, motivo: "No se pudo obtener el ranking de ventas de Gamalytic" };
+      }
+
+      const top10Ids = rankingGamalytic.map(juego => juego.steamId);
+
+      const resultadosTop10 = await this.detallesMultiplesJuegos(top10Ids, 10);
+
+      if (resultadosTop10.juegos && resultadosTop10.juegos.length > 0) {
+        resultadosTop10.juegos.sort((a, b) => b.gananciaBrutaEstimada - a.gananciaBrutaEstimada);
+      }
+
+      return {
+        encontrado: resultadosTop10.encontrado,
+        titulo: "Top 10 Juegos Más Vendidos en la Historia (Estimado Gamalytic)",
+        totalConsultados: resultadosTop10.totalConsultados,
+        juegos: resultadosTop10.juegos
+      };
+
+    } catch (error) {
+      console.error("Error al obtener el Top 10 más vendidos:", error);
+      return { encontrado: false, error: error.message };
+    }
+  },
+
+  // la llamda es muy parecida a masvendidos 
+
+  /*async top10MasVendidosRecientes(diasAtras = 30) {
+    try {
+      const fechaActual = new Date();
+      fechaActual.setDate(fechaActual.getDate() - diasAtras);
+      
+      const fechaFormateada = fechaActual.toISOString().split('T')[0];
+
+      const urlGamalytic = `https://api.gamalytic.com/steam-games/list?limit=10&dateFrom=${fechaFormateada}`;
+      
+      const gamalytic = await fetchDirecto(urlGamalytic);
+      const rankingGamalytic = gamalytic.result ?? [];
+      
+      if (rankingGamalytic.length === 0) {
+        return { encontrado: false, motivo: `No se encontraron datos de ventas desde ${fechaFormateada}` };
+      }
+
+      const top10Ids = rankingGamalytic.map(juego => juego.steamId);
+
+      const resultadosTop10 = await this.detallesMultiplesJuegos(top10Ids, 10);
+
+      if (resultadosTop10.juegos && resultadosTop10.juegos.length > 0) {
+        resultadosTop10.juegos.sort((a, b) => b.gananciaBrutaEstimada - a.gananciaBrutaEstimada);
+      }
+
+      return {
+        encontrado: resultadosTop10.encontrado,
+        titulo: `Top 10 Juegos Más Vendidos (Últimos ${diasAtras} días)`,
+        fechaFiltro: fechaFormateada,
+        totalConsultados: resultadosTop10.totalConsultados,
+        juegos: resultadosTop10.juegos
+      };
+
+    } catch (error) {
+      console.error("Error al obtener los más vendidos recientes:", error);
+      return { encontrado: false, error: error.message };
+    }
+  }*/
 };
