@@ -212,3 +212,366 @@ export const JugadoresDelServidorAPI = {
     };
   },
 };
+
+// aqui empieza steam
+export const CONFIG = {
+    API_KEY: "apikey-de-steam",
+    BASE_URL: "https://api.steampowered.com",
+  };
+
+  const PROXIES_CORS = [
+    (url) => `https://corsproxy.io/?url=${encodeURIComponent(url)}`,
+    (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+    (url) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+  ];
+
+  export async function fetchConProxy(urlReal, timeoutMs = 6000) {
+    let ultimoError = null;
+
+    for (const armarProxy of PROXIES_CORS) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+        const respuesta = await fetch(armarProxy(urlReal), { signal: controller.signal });
+        clearTimeout(timeoutId);
+
+        if (!respuesta.ok) throw new Error(`HTTP ${respuesta.status}`);
+        return await respuesta.json();
+      } catch (error) {
+        ultimoError = error;
+      }
+    }
+    throw ultimoError ?? new Error("Todos los proxies fallaron o dieron timeout");
+  }
+
+  export async function fetchDirecto(url) {
+    const respuesta = await fetch(url, { headers: { accept: "application/json" } });
+    if (respuesta.status === 403) throw new Error("Endpoint bloqueado (403)");
+    if (!respuesta.ok) throw new Error(`HTTP ${respuesta.status}`);
+    return await respuesta.json();
+  }
+
+  export function construirUrlSteam(interfaz, metodo, version, parametros = {}) {
+    const versionFormateada = `v${String(version).padStart(4, "0")}`;
+    const url = new URL(`${CONFIG.BASE_URL}/${interfaz}/${metodo}/${versionFormateada}/`);
+    
+    url.searchParams.set("key", CONFIG.API_KEY);
+    url.searchParams.set("format", "json");
+
+    for (const [clave, valor] of Object.entries(parametros)) {
+      if (valor !== undefined && valor !== null) {
+        url.searchParams.set(clave, valor);
+      }
+    }
+    return url.toString();
+}
+
+// usuario-steam
+const ESTADOS_CONEXION = {
+  0: "Desconectado", 1: "En línea", 2: "Ocupado",
+  3: "Ausente", 4: "Durmiendo", 5: "Buscando intercambiar", 6: "Buscando jugar"
+};
+
+export const SteamUsuarioAPI = {
+  async resumenPerfil(steamIds) {
+    const listaIds = Array.isArray(steamIds) ? steamIds.join(",") : steamIds;
+    try {
+      const url = construirUrlSteam("ISteamUser", "GetPlayerSummaries", 2, { steamids: listaIds });
+      const datos = await fetchConProxy(url);
+      const jugadores = datos.response?.players ?? [];
+      
+      return {
+        encontrado: jugadores.length > 0,
+        jugadores: jugadores.map((j) => ({
+          steamId: j.steamid,
+          nombre: j.personaname,
+          urlPerfil: j.profileurl,
+          avatarGrande: j.avatarfull,
+          estadoConexion: ESTADOS_CONEXION[j.personastate] ?? "Desconocido",
+          perfilVisible: j.communityvisibilitystate === 3,
+          fechaCreacionCuenta: j.timecreated ? new Date(j.timecreated * 1000) : null,
+          jugandoAhora: j.gameextrainfo ?? null,
+        })),
+      };
+    } catch (error) {
+      return { encontrado: false, jugadores: [], error: error.message };
+    }
+  },
+
+  async historialBaneos(steamIds) {
+    const listaIds = Array.isArray(steamIds) ? steamIds.join(",") : steamIds;
+    try {
+      const url = construirUrlSteam("ISteamUser", "GetPlayerBans", 1, { steamids: listaIds });
+      const datos = await fetchConProxy(url);
+      const jugadores = datos.players ?? [];
+      
+      return {
+        encontrado: jugadores.length > 0,
+        jugadores: jugadores.map((j) => ({
+          steamId: j.SteamId,
+          baneadoVac: j.VACBanned,
+          cantidadBaneosVac: j.NumberOfVACBans,
+          diasDesdeUltimoBaneo: j.DaysSinceLastBan,
+          baneadoComunidad: j.CommunityBanned,
+          estadoEconomia: j.EconomyBan,
+        })),
+      };
+    } catch (error) {
+      return { encontrado: false, jugadores: [], error: error.message };
+    }
+  },
+
+  async resolverVanityUrl(vanityUrl) {
+    try {
+      const url = construirUrlSteam("ISteamUser", "ResolveVanityURL", 1, { vanityurl: vanityUrl });
+      const datos = await fetchConProxy(url);
+      
+      if (datos.response?.success !== 1) return { encontrado: false, motivo: "No existe perfil" };
+      return { encontrado: true, steamId: datos.response.steamid };
+    } catch (error) {
+      return { encontrado: false, error: error.message };
+    }
+  }
+};
+ //biblioteca de usuario - enlazar con usuario a buscar
+export const SteamBibliotecaAPI = {
+  async juegosPoseidos(steamId) {
+    try {
+      const url = construirUrlSteam("IPlayerService", "GetOwnedGames", 1, {
+        steamid: steamId, include_appinfo: 1, include_played_free_games: 1
+      });
+      const datos = await fetchConProxy(url);
+      const juegos = datos.response?.games ?? [];
+
+      return {
+        encontrado: true,
+        totalJuegos: datos.response?.game_count ?? juegos.length,
+        juegos: juegos.map((j) => ({
+          appId: j.appid,
+          nombre: j.name,
+          horasJugadas: Math.round((j.playtime_forever / 60) * 10) / 10,
+      //  imagenCapsula: `https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/${j.appid}/capsule_231x87.jpg`,
+          imagenPortada: `https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/${j.appid}/header.jpg`
+        })),
+      };
+    } catch (error) {
+      return { encontrado: false, juegos: [], error: error.message };
+    }
+  },
+
+  async analizarValorBiblioteca(steamId) {
+    const resultadoBiblioteca = await this.juegosPoseidos(steamId);
+    
+    if (!resultadoBiblioteca.encontrado || resultadoBiblioteca.juegos.length === 0) {
+      return { encontrado: false, valorTotalCuenta: 0, juegos: [] };
+    }
+
+    const juegosUsuario = resultadoBiblioteca.juegos;
+    const arrayDeIds = juegosUsuario.map(j => j.appId);
+    const juegosConPrecio = [];
+    let dineroTotalInvertido = 0;
+
+    for (let i = 0; i < arrayDeIds.length; i += 50) { //en lotes de 50 papaito
+      const loteIds = arrayDeIds.slice(i, i + 50);
+      const stringIds = loteIds.join(',');
+
+      try {
+        const gamalytic = await fetchDirecto(`https://api.gamalytic.com/steam-games/list?appids=${stringIds}`); // no abusar
+         
+        for (const juego of juegosUsuario.slice(i, i + 50)) {
+          const datosFinanzas = gamalytic.result?.find(g => String(g.steamId) === String(juego.appId)) || {};
+          const precioActual = datosFinanzas.price || null; //precio por lote
+          
+          if (precioActual) {
+            dineroTotalInvertido += precioActual;
+          }
+
+          juegosConPrecio.push({
+            ...juego, // esto hereda appId, nombre, horas y las imagenes pero lo busque como implementa (... tienen propiedades raras) 
+            precio: precioActual // null = Gratis
+          });
+        }
+      } catch (error) {
+        console.error(`Error calculando precios del lote ${stringIds}:`, error);
+      }
+
+      // Pausa rápida de seguridad
+      if (i + 50 < arrayDeIds.length) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+    }
+
+    return {
+      encontrado: true,
+      totalJuegosProcesados: juegosConPrecio.length,
+      valorTotalCuenta: Math.round(dineroTotalInvertido * 100) / 100, // Redondeo a 2 decimales
+      juegos: juegosConPrecio
+    };
+  },
+
+  async insignias(steamId) {
+    try {
+      const url = construirUrlSteam("IPlayerService", "GetBadges", 1, { steamid: steamId });
+      const datos = await fetchConProxy(url);
+
+      return {
+        encontrado: true,
+        nivelSteam: datos.response?.player_level ?? 0,
+        xpActual: datos.response?.player_xp ?? 0,
+      };
+    } catch (error) {
+      return { encontrado: false, insignias: [], error: error.message };
+    }
+  }
+};
+
+// bucador de la tienda con precio costo y dineto total generado 
+// futuro agregarr algun comparador si precio = null 
+export const SteamTiendaAPI = {
+  async detallesCompletosJuego(appId) {
+    try { //la peticiones se vab por las nuves
+      const [steamStore, gamalytic, steamReviews] = await Promise.all([
+        fetchConProxy(`https://store.steampowered.com/api/appdetails?appids=${appId}`),
+        fetchDirecto(`https://api.gamalytic.com/steam-games/list?appids=${appId}`),
+        fetchConProxy(`https://store.steampowered.com/appreviews/${appId}?json=1&language=spanish&purchase_type=all&num_per_page=20`)
+      ]);
+
+      const datosSteam = steamStore && steamStore[appId]?.success ? steamStore[appId].data : null;
+      const datosFinanzas = gamalytic.result?.[0] || {};
+
+      if (!datosSteam) return { encontrado: false, motivo: "Juego no encontrado o bloqueado por Steam" };
+
+      // rese;as de sh****
+      const totalResenas = steamReviews?.query_summary?.total_reviews || 0;
+      let resenasAleatorias = [];
+      
+      if (steamReviews?.reviews && steamReviews.reviews.length > 0) {
+        const mezcladas = steamReviews.reviews
+          .filter(r => r.review && r.review.trim() !== "")
+          .sort(() => 0.5 - Math.random());
+          
+        resenasAleatorias = mezcladas.slice(0, 3).map(r => ({
+          recomendado: r.voted_up, // true = pulgar arriba, false = pulgar abajo
+          horasJugadas: r.author?.playtime_forever ? Math.round(r.author.playtime_forever / 60) : 0,
+          texto: r.review
+        }));
+      }
+
+      return {
+        encontrado: true,
+        juego: {
+          id: appId,
+          nombre: datosSteam.name,
+          descripcion: datosSteam.short_description,
+          imagenPortada: datosSteam.header_image,
+          imagenCapsula: datosSteam.capsule_image,
+          desarrolladores: datosSteam.developers ?? [],
+          editores: datosSteam.publishers ?? [],
+          etiquetas: datosSteam.genres?.map(g => g.description) ?? [],
+          precioActual: datosFinanzas.price || null,
+          ventasEstimadas: datosFinanzas.copiesSold || 0,
+          gananciaBrutaEstimada: (datosFinanzas.price && datosFinanzas.copiesSold) ? Math.round(datosFinanzas.price * datosFinanzas.copiesSold) : 0,
+          
+          // Nuevos campos agregados
+          totalResenas: totalResenas,
+          resenasMuestra: resenasAleatorias
+        }
+      };
+    } catch (error) {
+      return { encontrado: false, error: error.message };
+    }
+  },
+
+  async detallesMultiplesJuegos(arrayDeIds, tamanoLote = 10) {
+    const idsUnicos = [...new Set(arrayDeIds.map(String).filter(Boolean))];
+    const juegosEncontrados = [];
+
+    for (let i = 0; i < idsUnicos.length; i += tamanoLote) {
+      const loteIds = idsUnicos.slice(i, i + tamanoLote);
+      const stringIds = loteIds.join(',');
+
+      try {
+        const [resultadosSteam, gamalytic] = await Promise.all([
+          Promise.all(
+            loteIds.map((id) =>
+              Promise.all([
+                fetchConProxy(`https://store.steampowered.com/api/appdetails?appids=${id}`),
+                fetchConProxy(`https://store.steampowered.com/appreviews/${id}?json=1&language=spanish&purchase_type=all&num_per_page=1`)
+              ])
+                .then(([datosApp, datosReviews]) => ({ id, datosApp, datosReviews }))
+                .catch((error) => ({ id, datosApp: null, datosReviews: null, error }))
+            )
+          ),
+          fetchDirecto(`https://api.gamalytic.com/steam-games/list?appids=${stringIds}`)
+        ]);
+
+        for (const { id, datosApp, datosReviews } of resultadosSteam) {
+          const datosSteam = datosApp?.[id]?.success ? datosApp[id].data : null;
+          const datosFinanzas = gamalytic.result?.find(g => String(g.steamId) === String(id)) || {};
+          const totalResenas = datosReviews?.query_summary?.total_reviews || 0;
+
+          if (datosSteam) {
+            juegosEncontrados.push({
+              id,
+              nombre: datosSteam.name,
+              descripcion: datosSteam.short_description,
+              imagenPortada: datosSteam.header_image,
+              imagenCapsula: datosSteam.capsule_image,
+              desarrolladores: datosSteam.developers ?? [],
+              editores: datosSteam.publishers ?? [],
+              etiquetas: datosSteam.genres?.map(g => g.description) ?? [],
+              precioActual: datosFinanzas.price || null,
+              ventasEstimadas: datosFinanzas.copiesSold || 0,
+              gananciaBrutaEstimada: (datosFinanzas.price && datosFinanzas.copiesSold) ? Math.round(datosFinanzas.price * datosFinanzas.copiesSold) : 0,
+              totalResenas
+            });
+          }
+        }
+      } catch (error) {
+        console.error(`Error procesando el lote ${stringIds}:`, error);
+      }
+
+      if (i + tamanoLote < idsUnicos.length) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+    }
+
+    return {
+      encontrado: juegosEncontrados.length > 0,
+      totalConsultados: idsUnicos.length,
+      totalResueltos: juegosEncontrados.length,
+      juegos: juegosEncontrados
+    };
+  },
+
+  async buscarJuego(entrada) {
+    const valor = String(entrada).trim();
+    const esAppId = /^\d+$/.test(valor);
+
+    if (esAppId) {
+      return this.detallesCompletosJuego(valor); 
+    }
+
+    try {
+      const urlBusqueda = `https://store.steampowered.com/api/storesearch/?term=${encodeURIComponent(valor)}&l=spanish&cc=US`;
+      const datosBusqueda = await fetchConProxy(urlBusqueda);
+
+      if (!datosBusqueda || !datosBusqueda.items || datosBusqueda.items.length === 0) {
+        return { encontrado: false, motivo: `Sin coincidencias para "${valor}"` };
+      }
+
+      const mejorCoincidencia = datosBusqueda.items[0];
+      const resultado = await this.detallesCompletosJuego(mejorCoincidencia.id);
+
+      return {
+        ...resultado,
+        busquedaOriginal: valor,
+        coincidenciaUsada: mejorCoincidencia.name,
+        otrasOpciones: datosBusqueda.items.slice(1, 6).map(j => ({ id: j.id, nombre: j.name }))
+      };
+    } catch (error) {
+      return { encontrado: false, motivo: "Error al buscar el juego por nombre", error: error.message };
+    }
+  }
+};
