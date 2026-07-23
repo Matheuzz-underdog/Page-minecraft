@@ -3,42 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="CSS/styles.css">
-    <link rel="icon" href="assets/icons/magnifyingGlass.ico">
-    <title>Mincecraft Profile-Server Finder</title>
+    <title>Buscadores - Página Principal</title>
 </head>
 <body>
+
     <header>
-        <div class="boton_con">
-            <button id="config">
-            <img src="assets/images/settings_pause_menu_icon.png" alt="configuracion">
-            </button>
-        </div>
-        <div id="titulo_con">
-            <img src="assets/images/TITULO.png" alt="MINECRAFT" id="titulo">
-            <h1>PROFILE-SERVER FINDER</h1>
-        </div>
-        <div class="boton_con">
-            <h4>modo</h4>
-            <button id="toggle">
-            <img src="assets/images/switch.png" alt="">
-            </button>
-        </div>
+        <h1>Buscadores</h1>
+        <nav>
+            <a id="link-steam" href="steam.html">Ir al Buscador de Steam</a>
+            <a id="link-maincraft" href="maincraft.html">Ir al Buscador de Minecraft</a>
+        </nav>
     </header>
+
     <main>
-        <form id="form-busqueda">
-            <input type="text" id="input-busqueda" placeholder="Ingresa un usuario o servidor para buscar...">
-            <button type="submit" id="boton_buscar">
-                <img src="assets/images/lupa.png" alt="buscar">
-            </button>
-        </form>
-        <div id="lista-resultados" class="lista-resultados"></div>
+        <p id="mensajes-sistema"></p>
+
+        <section id="seccion-mas-jugados">
+            <h2>Top 10 Juegos Más Jugados</h2>
+            <ul id="lista-mas-jugados"></ul>
+        </section>
+
+        <section id="seccion-mas-vendidos">
+            <h2>Top 10 Más Vendidos en la Historia</h2>
+            <ul id="lista-mas-vendidos"></ul>
+        </section>
+
+        <template id="template-juego-jugado">
+            <li>
+                <img class="ranking-img" src="" alt="Portada del juego" width="120">
+                <strong class="ranking-nombre"></strong>
+                (AppID: <span class="ranking-appid"></span>)
+                <p class="ranking-dato"></p>
+                <span class="ranking-precio"></span>
+            </li>
+        </template>
+
+        <template id="template-juego-vendido">
+            <li>
+                <img class="ranking-img" src="" alt="Portada del juego" width="120">
+                <strong class="ranking-nombre"></strong>
+                (AppID: <span class="ranking-appid"></span>)
+                <p class="ranking-dato"></p>
+                <span class="ranking-precio"></span>
+            </li>
+        </template>
     </main>
-    <footer>
-        <button id="info">
-            <img src="assets/images/info.png" alt="info">
-        </button>
-        <script type="module" src="JS/main.js"></script>
-    </footer>
+
+    <footer></footer>
+
+    <script type="module" src="./JS/main-index.js"></script>
 </body>
 </html>

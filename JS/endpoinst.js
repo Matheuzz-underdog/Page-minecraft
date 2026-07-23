@@ -215,7 +215,7 @@ export const JugadoresDelServidorAPI = {
 
 // aqui empieza steam
 export const CONFIG = {
-    API_KEY: "apikey-de-steam",
+    API_KEY: "D6C0C24EC52AD41F6403D2BD17F6749F",
     BASE_URL: "https://api.steampowered.com",
   };
 
@@ -351,7 +351,7 @@ export const SteamBibliotecaAPI = {
           appId: j.appid,
           nombre: j.name,
           horasJugadas: Math.round((j.playtime_forever / 60) * 10) / 10,
-      //  imagenCapsula: `https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/${j.appid}/capsule_231x87.jpg`,
+          imagenCapsula: `https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/${j.appid}/capsule_231x87.jpg`,
           imagenPortada: `https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/${j.appid}/header.jpg`
         })),
       };
