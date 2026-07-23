@@ -622,15 +622,24 @@ export const SteamTiendaAPI = {
 
   async top10MasVendidosHistorico() {
     try {
-      const gamalytic = await fetchDirecto(`https://api.gamalytic.com/steam-games/list?limit=10`);
+      // pedimos 20 en vez de 10 porque algunos se van a descartar por ser gratis
+      const gamalytic = await fetchDirecto(`https://api.gamalytic.com/steam-games/list?limit=20`);
 
       const rankingGamalytic = gamalytic.result ?? [];
-      
+
       if (rankingGamalytic.length === 0) {
         return { encontrado: false, motivo: "No se pudo obtener el ranking de ventas de Gamalytic" };
       }
 
-      const top10Ids = rankingGamalytic.map(juego => juego.steamId);
+      // descartamos los gratuitos (price null, 0 o indefinido) antes de pedir detalles completos
+      // asi no gastamos llamadas caras (steam + reviews + jugadores) en juegos que vamos a tirar
+      const soloDePago = rankingGamalytic.filter(juego => juego.price > 0);
+
+      const top10Ids = soloDePago.slice(0, 10).map(juego => juego.steamId);
+
+      if (top10Ids.length === 0) {
+        return { encontrado: false, motivo: "No se encontraron juegos de pago en el ranking" };
+      }
 
       const resultadosTop10 = await this.detallesMultiplesJuegos(top10Ids, 10);
 
