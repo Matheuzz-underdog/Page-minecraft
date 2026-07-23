@@ -112,7 +112,7 @@ function renderizarJuego(resultado) {
 
     juego.resenasMuestra.forEach(r => {
         const clon = templateResena.content.cloneNode(true);
-        clon.querySelector('.resena-recomendacion').textContent = r.recomendado ? "✅ Recomendado" : "❌ No Recomendado";
+        clon.querySelector('.resena-recomendacion').textContent = r.recomendado ? "Recomendado" : "No Recomendado";
         clon.querySelector('.resena-horas').textContent = r.horasJugadas;
         clon.querySelector('.resena-texto').textContent = `"${r.texto}"`;
         listaResenas.appendChild(clon);

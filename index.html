@@ -4,52 +4,61 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Buscadores - Página Principal</title>
+    <!-- Vinculamos el CSS -->
+    <link rel="stylesheet" href="css/styles.css"> 
 </head>
 <body>
 
-    <header>
-        <h1>Buscadores</h1>
-        <nav>
-            <a id="link-steam" href="steam.html">Ir al Buscador de Steam</a>
-            <a id="link-maincraft" href="maincraft.html">Ir al Buscador de Minecraft</a>
+    <header class="navbar">
+        <h1>Buscadores Steam - Minecraft</h1>
+        <nav class="nav-links">
+            <a id="link-index" href="index.html" class="btn-nav btn-inicio">Inicio</a>
+            <a id="link-steam" href="steam.html" class="btn-nav btn-steam">Buscador de Steam</a>
+            <a id="link-minecraft" href="minecraft.html" class="btn-nav btn-minecraft">Buscador de Minecraft</a>
         </nav>
     </header>
 
-    <main>
-        <p id="mensajes-sistema"></p>
+    <main class="container">
+        <p id="mensajes-sistema" class="mensaje-sistema"></p>
 
         <section id="seccion-mas-jugados">
             <h2>Top 10 Juegos Más Jugados</h2>
-            <ul id="lista-mas-jugados"></ul>
+            <ul id="lista-mas-jugados" class="grid-juegos"></ul>
         </section>
 
         <section id="seccion-mas-vendidos">
             <h2>Top 10 Más Vendidos en la Historia</h2>
-            <ul id="lista-mas-vendidos"></ul>
+            <ul id="lista-mas-vendidos" class="grid-juegos"></ul>
         </section>
 
         <template id="template-juego-jugado">
-            <li>
-                <img class="ranking-img" src="" alt="Portada del juego" width="120">
-                <strong class="ranking-nombre"></strong>
-                (AppID: <span class="ranking-appid"></span>)
-                <p class="ranking-dato"></p>
-                <span class="ranking-precio"></span>
+            <li class="tarjeta-juego">
+                <img class="ranking-img" src="" alt="Portada del juego">
+                <div class="tarjeta-info">
+                    <strong class="ranking-nombre"></strong>
+                    <span class="ranking-appid-text">AppID: <span class="ranking-appid"></span></span>
+                    <p class="ranking-dato"></p>
+                    <span class="ranking-precio"></span>
+                </div>
             </li>
         </template>
 
         <template id="template-juego-vendido">
-            <li>
-                <img class="ranking-img" src="" alt="Portada del juego" width="120">
-                <strong class="ranking-nombre"></strong>
-                (AppID: <span class="ranking-appid"></span>)
-                <p class="ranking-dato"></p>
-                <span class="ranking-precio"></span>
+            <li class="tarjeta-juego">
+                <img class="ranking-img" src="" alt="Portada del juego">
+                <div class="tarjeta-info">
+                    <strong class="ranking-nombre"></strong>
+                    <span class="ranking-appid-text">AppID: <span class="ranking-appid"></span></span>
+                    <p class="ranking-dato"></p>
+                    <span class="ranking-precio"></span>
+                </div>
             </li>
         </template>
     </main>
 
-    <footer></footer>
+    <footer>
+        <p> <a href="https://github.com/Matheuzz-underdog" target="_blank">Sergio Cuevas</a> | <a href="https://github.com/Nelsoon056" target="_blank">Nelson Sandoval</a> | <a href="https://github.com/kiwig0dd" target="_blank">Jose Godoy</a> | &copy; 2026</p>
+    </footer>
 
     <script type="module" src="./JS/main-index.js"></script>
 </body>

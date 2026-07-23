@@ -1,139 +1,157 @@
-// todo estilo aqui es provivcional por ende mal implementado
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Buscador Steam & Finanzas</title>
+    <!-- Vinculamos el mismo archivo CSS del Index -->
+    <link rel="stylesheet" href="css/styles.css"> 
 </head>
 <body>
 
-    <header>
-        <h1>Buscador Avanzado de Steam</h1>
-        <nav>
-            <a id="link-steam" href="steam.html">Ir al Buscador de Steam</a>
-            <a id="link-maincraft" href="maincraft.html">Ir al Buscador de Minecraft</a>
-            <a id="link-index" href="index.html">ir al incio</a>
+    <header class="navbar">
+        <h1>Buscador Steam</h1>
+        <nav class="nav-links">
+            <a id="link-index" href="index.html" class="btn-nav btn-inicio">Inicio</a>
+            <a id="link-steam" href="steam.html" class="btn-nav btn-steam">Buscador de Steam</a>
+            <a id="link-minecraft" href="minecraft.html" class="btn-nav btn-minecraft">Buscador de Minecraft</a>
         </nav>
-        <form id="formulario-busqueda">
-            <select id="tipo-busqueda" required>
+    </header>
+
+    <section class="search-section">
+        <form id="formulario-busqueda" class="search-form">
+            <select id="tipo-busqueda" class="search-input" required>
                 <option value="juego">Juego (Nombre o AppID)</option>
                 <option value="usuario">Usuario (Vanity URL o SteamID64)</option>
             </select>
-            <input type="text" id="input-busqueda" placeholder="Ej: Terraria o gabelogannewell" required>
-            <button type="submit">Buscar</button>
+            <input type="text" id="input-busqueda" class="search-input" placeholder="Ej: Terraria o gabelogannewell" required>
+            <button type="submit" class="search-btn">Buscar</button>
         </form>
-    </header>
+    </section>
 
-    <main>
-        <section id="mensajes-sistema"></section>
+    <main class="container">
+        <p id="mensajes-sistema" class="mensaje-sistema"></p>
 
-        <section id="contenedor-usuario" style="display: none;">
-            <h2>Perfil de Usuario</h2>
+        <section id="contenedor-usuario" class="resultado-container" style="display: none;">
             
-            <article>
-                <img id="usuario-avatar" src="" alt="Avatar del usuario">
-                <h3 id="usuario-nombre"></h3>
-                <ul>
-                    <li><strong>SteamID64:</strong> <span id="usuario-steamid"></span></li>
-                    <li><strong>Estado:</strong> <span id="usuario-estado"></span></li>
-                    <li><strong>Visibilidad:</strong> <span id="usuario-visibilidad"></span></li>
-                    <li><strong>Cuenta creada:</strong> <span id="usuario-creacion"></span></li>
-                    <li><strong>Nivel Steam:</strong> <span id="usuario-nivel"></span></li>
-                    <li id="usuario-jugando-container" style="display: none;"><strong>Jugando ahora:</strong> <span id="usuario-jugando"></span></li>
-                </ul>
-                <p><a id="usuario-link" href="#" target="_blank">Ver perfil oficial</a></p>
-            </article>
-            
-            <article>
-                <h3>Historial de Baneos</h3>
-                <ul>
-                    <li><strong>Baneo VAC:</strong> <span id="baneo-vac"></span></li>
-                    <li><strong>Días desde último baneo:</strong> <span id="baneo-dias"></span></li>
-                    <li><strong>Baneo de Comunidad:</strong> <span id="baneo-comunidad"></span></li>
-                    <li><strong>Estado Economía:</strong> <span id="baneo-economia"></span></li>
-                </ul>
-            </article>
-            
-            <article>
-                <h3>Biblioteca y Finanzas</h3>
-                <div id="usuario-biblioteca-resumen">
-                    <ul>
-                        <li><strong>Juegos procesados:</strong> <span id="biblio-total"></span></li>
-                        <li><strong>Valor de la Cuenta:</strong> <span id="biblio-valor"></span></li>
-                    </ul>
-                    <details id="biblio-detalles-container">
-                        <summary id="biblio-summary"></summary>
-                        <ul id="biblio-lista"></ul> <!-- JS inyectará los juegos aquí -->
-                    </details>
+            <div class="perfil-header">
+                <img id="usuario-avatar" src="" alt="Avatar del usuario" class="avatar-img">
+                <div class="perfil-info-principal">
+                    <h2 id="usuario-nombre"></h2>
+                    <a id="usuario-link" href="#" target="_blank" class="link-perfil">Ver perfil oficial en Steam</a>
                 </div>
-                <p id="usuario-biblioteca-error" style="display: none;">Privada o sin juegos.</p>
-            </article>
+            </div>
+            
+            <div class="grid-detalles">
+                <article class="tarjeta-detalle">
+                    <h3>Datos de Cuenta</h3>
+                    <ul>
+                        <li><strong>SteamID64:</strong> <span id="usuario-steamid"></span></li>
+                        <li><strong>Estado:</strong> <span id="usuario-estado" class="txt-highlight"></span></li>
+                        <li><strong>Visibilidad:</strong> <span id="usuario-visibilidad"></span></li>
+                        <li><strong>Cuenta creada:</strong> <span id="usuario-creacion"></span></li>
+                        <li><strong>Nivel Steam:</strong> <span id="usuario-nivel"></span></li>
+                        <li id="usuario-jugando-container" style="display: none;"><strong>Jugando ahora:</strong> <span id="usuario-jugando" class="txt-minecraft"></span></li>
+                    </ul>
+                </article>
+                
+                <article class="tarjeta-detalle">
+                    <h3>Historial de Baneos</h3>
+                    <ul>
+                        <li><strong>Baneo VAC:</strong> <span id="baneo-vac"></span></li>
+                        <li><strong>Días desde último baneo:</strong> <span id="baneo-dias"></span></li>
+                        <li><strong>Baneo de Comunidad:</strong> <span id="baneo-comunidad"></span></li>
+                        <li><strong>Estado Economía:</strong> <span id="baneo-economia"></span></li>
+                    </ul>
+                </article>
+                
+                <article class="tarjeta-detalle biblio-card">
+                    <h3>Biblioteca y Finanzas</h3>
+                    <div id="usuario-biblioteca-resumen">
+                        <ul class="stats-finanzas">
+                            <li><strong>Juegos procesados:</strong> <span id="biblio-total"></span></li>
+                            <li><strong>Valor de la Cuenta:</strong> <span id="biblio-valor" class="txt-dinero"></span></li>
+                        </ul>
+                        <details id="biblio-detalles-container" class="acordeon">
+                            <summary id="biblio-summary"></summary>
+                            <ul id="biblio-lista" class="lista-juegos-biblio"></ul>
+                        </details>
+                    </div>
+                    <p id="usuario-biblioteca-error" class="mensaje-sistema" style="display: none;">Cuenta privada o sin juegos.</p>
+                </article>
+            </div>
         </section>
 
-        <section id="contenedor-juego" style="display: none;">
-            <h2 id="juego-titulo"></h2>
+        <section id="contenedor-juego" class="resultado-container" style="display: none;">
             
-            <article>
-                <img id="juego-portada" src="" alt="Portada">
-                <br>
-                <img id="juego-capsula" src="" alt="Cápsula">
+            <div class="juego-header">
+                <img id="juego-portada" src="" alt="Portada" class="juego-portada-img">
+                <h2 id="juego-titulo" class="juego-titulo-overlay"></h2>
+            </div>
+            
+            <div class="juego-intro">
+                <img id="juego-capsula" src="" alt="Cápsula" class="juego-capsula-img">
                 <p id="juego-descripcion"></p>
-            </article>
+            </div>
 
-            <details id="juego-opciones-container" style="display: none;">
+            <details id="juego-opciones-container" class="acordeon" style="display: none; margin-bottom: 20px;">
                 <summary>Otras coincidencias de búsqueda</summary>
-                <ul id="juego-opciones-lista"></ul>
+                <ul id="juego-opciones-lista" class="lista-opciones"></ul>
             </details>
             
-            <article>
-                <h3>Datos Generales</h3>
-                <ul>
-                    <li><strong>AppID:</strong> <span id="juego-appid"></span></li>
-                    <li><strong>Jugadores actuales:</strong> <span id="juego-jugadores"></span></li>
-                    <li><strong>Desarrolladores:</strong> <span id="juego-desarrolladores"></span></li>
-                    <li><strong>Editores:</strong> <span id="juego-editores"></span></li>
-                    <li><strong>Etiquetas:</strong> <span id="juego-etiquetas"></span></li>
-                </ul>
-            </article>
+            <div class="grid-detalles">
+                <article class="tarjeta-detalle">
+                    <h3>Datos Generales</h3>
+                    <ul>
+                        <li><strong>AppID:</strong> <span id="juego-appid"></span></li>
+                        <li><strong>Jugadores actuales:</strong> <span id="juego-jugadores" class="txt-highlight"></span></li>
+                        <li><strong>Desarrolladores:</strong> <span id="juego-desarrolladores"></span></li>
+                        <li><strong>Editores:</strong> <span id="juego-editores"></span></li>
+                        <li><strong>Etiquetas:</strong> <span id="juego-etiquetas" class="txt-muted"></span></li>
+                    </ul>
+                </article>
+                
+                <article class="tarjeta-detalle">
+                    <h3>Finanzas Estimadas</h3>
+                    <ul>
+                        <li><strong>Precio Actual:</strong> <span id="juego-precio" class="txt-dinero"></span></li>
+                        <li><strong>Copias Vendidas:</strong> <span id="juego-ventas"></span></li>
+                        <li><strong>Ganancia Bruta:</strong> <span id="juego-ganancia" class="txt-dinero"></span></li>
+                    </ul>
+                </article>
+            </div>
             
-            <article>
-                <h3>Finanzas Estimadas</h3>
-                <ul>
-                    <li><strong>Precio Actual:</strong> <span id="juego-precio"></span></li>
-                    <li><strong>Copias Vendidas:</strong> <span id="juego-ventas"></span></li>
-                    <li><strong>Ganancia Bruta:</strong> <span id="juego-ganancia"></span></li>
-                </ul>
-            </article>
-            
-            <article>
+            <article class="tarjeta-detalle mt-4">
                 <h3 id="juego-resenas-titulo"></h3>
-                <div id="juego-resenas-lista"></div> <!-- JS inyectará las reseñas aquí -->
+                <div id="juego-resenas-lista" class="grid-resenas"></div> 
             </article>
         </section>
 
         <template id="template-juego-biblio">
-            <!-- minimo css para que no se sobreponga -->
-            <li style="margin-bottom:15px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #ccc; padding-bottom: 10px;"> 
-                <img class="biblio-img" src="" alt="Icono del juego" width="120">
-                <div>
-                    <strong class="biblio-nombre"></strong> (AppID: <span class="biblio-appid"></span>)<br>
-                    <em> <span class="biblio-horas"></span> hrs jugadas</em> | <span class="biblio-precio"></span>
+            <li class="item-biblio"> 
+                <img class="biblio-img" src="" alt="Icono del juego">
+                <div class="biblio-info">
+                    <strong class="biblio-nombre"></strong> 
+                    <span class="txt-muted">(AppID: <span class="biblio-appid"></span>)</span>
+                    <div class="biblio-stats">
+                        <em><span class="biblio-horas txt-highlight"></span> hrs</em> | <span class="biblio-precio txt-dinero"></span>
+                    </div>
                 </div>
             </li>
         </template>
 
         <template id="template-resena">
-            <div style="margin-bottom: 15px;"> 
-                <strong class="resena-recomendacion"></strong> 
-                (Horas jugadas: <span class="resena-horas"></span>)
-                <p><em class="resena-texto"></em></p>
+            <div class="tarjeta-resena"> 
+                <div class="resena-header">
+                    <strong class="resena-recomendacion"></strong> 
+                    <span class="txt-muted">(<span class="resena-horas"></span> hrs)</span>
+                </div>
+                <p class="resena-texto"></p>
             </div>
-            <hr>
         </template>
         
         <template id="template-opcion-busqueda">
-            <li><span class="opc-nombre"></span> (AppID: <span class="opc-id"></span>)</li>
+            <li class="item-opcion"><span class="opc-nombre"></span> <span class="txt-muted">(AppID: <span class="opc-id"></span>)</span></li>
         </template>
 
     </main>
