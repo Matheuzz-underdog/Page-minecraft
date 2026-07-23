@@ -476,6 +476,9 @@ export const SteamTiendaAPI = {
           ventasEstimadas: datosFinanzas.copiesSold || 0,
           gananciaBrutaEstimada: (datosFinanzas.price && datosFinanzas.copiesSold) ? Math.round(datosFinanzas.price * datosFinanzas.copiesSold) : 0,
           // Nuevo campo agregados
+          fechaLanzamiento: datosSteam.release_date?.coming_soon
+            ? `Próximamente${datosSteam.release_date?.date ? ` (${datosSteam.release_date.date})` : ""}`
+            : (datosSteam.release_date?.date || "Desconocida"),
           jugadoresActuales: jugadoresActuales,
           totalResenas: totalResenas,
           resenasMuestra: resenasAleatorias
@@ -530,6 +533,9 @@ export const SteamTiendaAPI = {
               precioActual: datosFinanzas.price || null,
               ventasEstimadas: datosFinanzas.copiesSold || 0,
               gananciaBrutaEstimada: (datosFinanzas.price && datosFinanzas.copiesSold) ? Math.round(datosFinanzas.price * datosFinanzas.copiesSold) : 0,
+              fechaLanzamiento: datosSteam.release_date?.coming_soon
+                ? `Próximamente${datosSteam.release_date?.date ? ` (${datosSteam.release_date.date})` : ""}`
+                : (datosSteam.release_date?.date || "Desconocida"),
               jugadoresActuales,
               totalResenas
             });

@@ -78,6 +78,7 @@ function renderizarJuego(resultado) {
     document.getElementById('juego-capsula').src = juego.imagenCapsula;
     document.getElementById('juego-descripcion').textContent = juego.descripcion;
     document.getElementById('juego-appid').textContent = juego.id;
+    document.getElementById('juego-fecha-lanzamiento').textContent = juego.fechaLanzamiento || "Desconocida";
     document.getElementById('juego-jugadores').textContent = juego.jugadoresActuales.toLocaleString();
     document.getElementById('juego-desarrolladores').textContent = juego.desarrolladores.join(', ');
     document.getElementById('juego-editores').textContent = juego.editores.join(', ');
