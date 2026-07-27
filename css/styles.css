@@ -52,6 +52,15 @@ a {
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
 }
 
+@media screen and (max-width: 650px) {
+    .navbar {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+}
+
 .navbar h1 {
     font-size: 1.8rem;
     letter-spacing: 1px;
@@ -64,15 +73,27 @@ a {
 .nav-links {
     display: flex;
     gap: 15px;
+    flex-direction: row;
+}
+
+@media screen and (max-width: 350px) {
+    .nav-links {
+        flex-direction: column;
+    }
 }
 
 .btn-nav {
     text-decoration: none;
-    padding: 10px 20px;
+    padding: 10px;
+    text-align: center;
+    line-height: 20px;
     border-radius: var(--border-radius);
     font-weight: bold;
     color: var(--bg-color);
     transition: transform var(--transition-speed), box-shadow var(--transition-speed);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .btn-inicio { background-color: #f2f2f2; }
