@@ -29,6 +29,9 @@
     padding: 0;
     box-sizing: border-box;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+    scrollbar-width: thin;
 }
 
 body {
@@ -132,11 +135,16 @@ h2 {
     padding-left: 10px;
 }
 
+template {
+    min-width: 5000px;
+}
+
 .grid-juegos {
     list-style: none;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
     gap: 20px;
+    max-width: 100%;
 }
 
 .tarjeta-juego {
